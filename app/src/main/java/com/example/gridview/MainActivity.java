@@ -12,7 +12,6 @@ import android.widget.GridView;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button mButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

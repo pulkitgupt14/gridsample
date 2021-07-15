@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,8 +20,8 @@ public class img extends AppCompatActivity implements View.OnClickListener{
         Intent intent =getIntent();
         eyo = intent.getStringExtra("image");
         ImageView imageView=(ImageView)findViewById(R.id.hello);
-        int i=Integer.parseInt(eyo);
-        imageView.setImageResource(i);
+
+        imageView.setImageURI(Uri.parse(eyo));
         Button mButton = findViewById(R.id.back);
         mButton.setOnClickListener(this);
         System.out.println(eyo);

@@ -1,6 +1,7 @@
 package com.example.gridview;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,22 +9,24 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
+import java.util.ArrayList;
+
 public class gridAdapter extends BaseAdapter
 {
    // private final String name[];
-    private final int images[];
+   ArrayList<File> images;
     Context context;
 
-    public gridAdapter(Context context, int[] images) {
+    public gridAdapter(Context context, ArrayList<File> e) {
         this.context = context;
-
-        this.images = images;
+        this.images = e;
     }
 
     @Override
     public int getCount()
     {
-        return images.length;
+        return images.size();
     }
 
     @Override
@@ -41,13 +44,8 @@ public class gridAdapter extends BaseAdapter
     {
         LayoutInflater layoutInflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view=layoutInflater.inflate(R.layout.singleframe,null);
-
         ImageView img=(ImageView)view.findViewById(R.id.iconimage);
-        //TextView tv=(TextView)view.findViewById(R.id.textdata);
-
-        img.setImageResource(images[position]);
-      //  tv.setText(name[position]);
-
+        img.setImageURI(Uri.parse(images.get(position).toString()));
         return view;
     }
 }
