@@ -3,6 +3,8 @@ package com.example.gridview;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,20 +13,21 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 public class img extends AppCompatActivity implements View.OnClickListener{
-    String eyo;
+    Bitmap bmp;
     Image img;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imageview);
         Intent intent =getIntent();
-        eyo = intent.getStringExtra("image");
+        byte[] byteArray = getIntent().getByteArrayExtra("image");
+        bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
         ImageView imageView=(ImageView)findViewById(R.id.hello);
 
-        imageView.setImageURI(Uri.parse(eyo));
+        imageView.setImageBitmap(bmp);
         Button mButton = findViewById(R.id.back);
         mButton.setOnClickListener(this);
-        System.out.println(eyo);
+
     }
     @Override
     public void onClick(View v) {

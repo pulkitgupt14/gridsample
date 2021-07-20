@@ -1,6 +1,7 @@
 package com.example.gridview;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +16,10 @@ import java.util.ArrayList;
 public class gridAdapter extends BaseAdapter
 {
    // private final String name[];
-   ArrayList<File> images;
+   ArrayList<Bitmap> images;
     Context context;
 
-    public gridAdapter(Context context, ArrayList<File> e) {
+    public gridAdapter(Context context, ArrayList<Bitmap> e) {
         this.context = context;
         this.images = e;
     }
@@ -45,7 +46,8 @@ public class gridAdapter extends BaseAdapter
         LayoutInflater layoutInflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view=layoutInflater.inflate(R.layout.singleframe,null);
         ImageView img=(ImageView)view.findViewById(R.id.iconimage);
-        img.setImageURI(Uri.parse(images.get(position).toString()));
+        img.setImageBitmap(images.get(position));
         return view;
     }
+
 }

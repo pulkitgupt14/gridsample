@@ -11,7 +11,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,7 +24,10 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.security.Permission;
 import java.util.ArrayList;
 
@@ -30,7 +36,7 @@ public class gridact extends AppCompatActivity {
 
     String lo[]= new String[1000];
     public static final int READ_STORAGE_PERMISSION = 101;
-    ArrayList<File> list = new ArrayList<File>();
+    public static ArrayList<Bitmap> list = new ArrayList<Bitmap>();
     Context context;
 
 
@@ -40,9 +46,16 @@ public class gridact extends AppCompatActivity {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_PERMISSION);
 
-
-        //System.out.println(list.size());
-        list = imageReader(Environment.getExternalStorageDirectory());
+     
+         message("all the files are read");
+         try {
+             if(list.size()==0)
+              list=  func(this);
+         }
+         catch(Exception e)
+         {
+           System.out.println(e.getStackTrace());
+         }
         grid = (GridView)findViewById(R.id.datagrid);
         gridAdapter obj = new gridAdapter(this,list);
         grid.setAdapter(obj);
@@ -53,7 +66,11 @@ public class gridact extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 System.out.println(position);
-                intent.putExtra("image", list.get(position).toString());
+                ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                Bitmap bp = list.get(position);
+                bp.compress(Bitmap.CompressFormat.PNG, 100, bStream);
+                byte[] byteArray = bStream.toByteArray();
+                intent.putExtra("image", byteArray);
                 startActivity(intent);
             }
         });
@@ -67,47 +84,81 @@ public class gridact extends AppCompatActivity {
         {
             if(grantResults[0]== PackageManager.PERMISSION_GRANTED)
             {
-                Toast.makeText(gridact.this, "permission granted", Toast.LENGTH_SHORT);
+                message("permission granted");
 
             }
             else{
-                Toast.makeText(gridact.this,"Permission   Denied", Toast.LENGTH_SHORT);
-
+                message("permission declined");
             }
         }
     }
-
-
-    public ArrayList<File> imageReader(File e)
+    public void message(String s)
     {
-        ArrayList<File> b = new ArrayList<>();
+        gridact.this.runOnUiThread(new Runnable() {
 
-        File files[]=e.listFiles();
-        if(files==null)
-            return b;
+            @Override
+            public void run() {
 
-        for(int i =0;i<files.length;i++)
-        {
-             if(files[i].isDirectory())
-             {
-                 b.addAll(imageReader(files[i]));
-             }
-             else {
-                 if(files[i].getName().endsWith("jpg"))
-                 {
-                     BitmapFactory.Options options = new BitmapFactory.Options();
-                     options.inJustDecodeBounds = true;
-                     BitmapFactory.decodeFile(files[i].getAbsolutePath(), options);
-                     double imageHeight = options.outHeight;
-                     double imageWidth = options.outWidth;
-                     double ratio = imageWidth/imageHeight;
-                     if(ratio>=2.0)
-                     {
-                         b.add(files[i]);
-                     }
-                 }
-             }
-        }
-        return b ;
+                Toast.makeText(gridact.this,s, Toast.LENGTH_SHORT);
+            }
+
+        });
     }
+
+    public ArrayList<Bitmap> func(Context context) throws IOException {
+        String projections[]=new String[]{MediaStore.MediaColumns.DATA,
+                MediaStore.Images.Media.WIDTH,
+                MediaStore.Images.Media.HEIGHT
+
+        };
+        //commented code for calculating time of activities
+
+      //  long start = System.nanoTime();
+        Uri images = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        /*long end = System.nanoTime();
+        double cal = end-start;
+        cal= cal/1000000000;*/
+        Cursor cur = context.getContentResolver().query(images,projections,null,null,null);
+    //    System.out.println("count     :"+"   "+cur.getCount()+" time : "+cal);
+        ArrayList<Bitmap> b=new ArrayList<Bitmap>();
+       // start = System.nanoTime();
+        if(cur.moveToFirst())
+        {
+               double w,h;
+               String absolutepath=null;
+               int wCol =cur.getColumnIndex(MediaStore.Images.Media.WIDTH);
+               int hCol = cur.getColumnIndex(MediaStore.Images.Media.HEIGHT);
+               int data = cur.getColumnIndex(MediaStore.MediaColumns.DATA);
+               do {
+                   w = cur.getInt(wCol);
+                   h = cur.getInt(hCol);
+                   absolutepath= cur.getString(data);
+                   try
+                   {
+                       Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver()
+                               , Uri.fromFile(new File(absolutepath)));
+                     //  System.out.println(absolutepath);
+                       if((w/h)>=0.0)
+                       {
+                           bitmap= ThumbnailUtils.extractThumbnail(bitmap,600,300);
+                           b.add(bitmap);
+                       }
+                   }
+                   catch (Exception e)
+                   {
+
+                   }
+
+               } while(cur.moveToNext());
+
+        }
+        // for calculating load time
+        /*
+        end= System.nanoTime();
+        cal = end-start;
+        cal= cal/(1000000000);
+        System.out.println("bitmap conversion : "+cal);*/
+        return b;
+    }
+
 }
